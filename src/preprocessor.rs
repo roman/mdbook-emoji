@@ -1,15 +1,19 @@
 use mdbook::book::{Book, BookItem};
 use mdbook::errors::Error;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
-use pulldown_cmark::{CowStr, Event};
+use pulldown_cmark::{CowStr, Event, Tag};
 use regex::Regex;
 use emojis;
 
-pub struct EmojiPreprocessor;
+pub struct EmojiPreprocessor {
+    convert_text: bool,
+}
 
 impl EmojiPreprocessor {
     pub fn new() -> Self {
-        EmojiPreprocessor
+        EmojiPreprocessor {
+            convert_text: true,
+        }
     }
 
     fn process_item(item: &mut BookItem) -> Result<(), Error> {
@@ -21,17 +25,44 @@ impl EmojiPreprocessor {
 
     fn process_content(content: &str) -> Result<String, Error> {
         let parser = mdbook::utils::new_cmark_parser(content);
-        let events = parser.map(EmojiPreprocessor::convert_event);
-        let mut buffer = String::new();
+        let mut preprocess = EmojiPreprocessor::new();
+        let events = parser.map(|event| preprocess.convert_event(event));
+        let mut buffer = String::with_capacity(content.len());
         pulldown_cmark_to_cmark::cmark(events, &mut buffer, None)
             .map_err(|err| Error::new(err).context("Markdown serialization failed"))?;
         Ok(buffer)
     }
 
-    fn convert_event(event: Event) -> Event {
+    fn convert_event<'a>(&mut self, event: Event<'a>) -> Event<'a> {
         match event {
-            Event::Text(ref text) => Event::Text(CowStr::from(convert_shortcodes_to_codepoints(text))),
+            Event::Start(Tag::CodeBlock(_)) => {
+                self.convert_text = false;
+                event
+            }
+            Event::End(Tag::CodeBlock(_)) => {
+                self.convert_text = true;
+                event
+            }
+            Event::Text(ref text) if self.convert_text => {
+                Event::Text(CowStr::from(convert_shortcodes_to_codepoints(text)))
+            }
             _ => event,
+        }
+    }
+
+    fn process_capture(shortcode: String, buffer: &str) -> Result<String, Error> {
+        let emoji = emojis::lookup(&shortcode.replace(":",""));
+        if emoji != None {
+            return Ok(Regex::new(&shortcode)
+                        .unwrap()
+                        .replace_all(
+                            &buffer,
+                            &emoji
+                                .unwrap()
+                                .to_string()
+                        ).into_owned());
+        } else {
+            return Ok(buffer.to_owned())
         }
     }
 }
@@ -54,29 +85,23 @@ impl Preprocessor for EmojiPreprocessor {
     }
 }
 
+
 fn convert_shortcodes_to_codepoints(original_text: &str) -> String {
-    let mut emoji_text: String = String::new();
-    for line in original_text.lines() {
-        let shortcode = Regex::new(r":[a-zA-Z_]*:").unwrap();
-        if shortcode.is_match(&line) {
-            let mut buffer: String = String::new();
-            buffer.push_str(&line);
-            for cap in shortcode.captures_iter(&line) {
-                let shortcode = &cap[0].to_string();
-                let emoji = emojis::lookup(&shortcode.replace(":",""));
-                if emoji != None {
-                    let emoji = emoji.unwrap().to_string();
-                    let r = Regex::new(&shortcode).unwrap();
-                    buffer = r.replace_all(&buffer, &emoji).to_string();
-                }
-            }
-            emoji_text.push_str(&buffer);
-        } else {
-            emoji_text.push_str(&line);
-        };
-        emoji_text.push('\n');
-    };
-    return emoji_text;
+    let pattern = Regex::new(r":[a-zA-Z_]*:").unwrap();
+    let mut buffer: String = String::new();
+    let mut patterns: Vec<String> = Vec::new();
+    buffer.push_str(&original_text);
+    if pattern.is_match(&original_text) {
+        for capture in pattern.captures_iter(&original_text) {
+            patterns.push(capture[0].to_string())
+        }
+        patterns.sort();
+        patterns.dedup();
+        for shortcode in patterns {
+            buffer = EmojiPreprocessor::process_capture(shortcode, &buffer).unwrap();
+        }
+    }
+    return buffer;
 }
 
 #[cfg(test)]
@@ -87,7 +112,7 @@ mod test {
     #[test]
     fn process_content() {
         let new_content =
-            EmojiPreprocessor::process_content(":sparkling_heart:").unwrap();
-        assert_eq!(new_content, "💖\n")
+            EmojiPreprocessor::process_content(":sparkling_heart: `:smile:` :smile:\n:sparkling_heart: :bowtie:\n```\n:smile:\n````").unwrap();
+        assert_eq!(new_content, "💖 `:smile:` 😄\n💖 :bowtie:\n\n````\n:smile:\n````")
     }
 }

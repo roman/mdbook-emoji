@@ -1,28 +1,28 @@
-# mdbook-curly-quotes
+# mdbook-emoji
 
-[![build](https://github.com/arminha/mdbook-curly-quotes/workflows/build/badge.svg)](https://github.com/arminha/mdbook-curly-quotes/actions?query=workflow%3Abuild)
-[![dependency status](https://deps.rs/repo/github/arminha/mdbook-curly-quotes/status.svg)](https://deps.rs/repo/github/arminha/mdbook-curly-quotes)
-[![Crates.io](https://img.shields.io/crates/v/mdbook-curly-quotes)](https://crates.io/crates/mdbook-curly-quotes)
+[![build](https://github.com/almereyda/mdbook-emoji/workflows/build/badge.svg)](https://github.com/almereyda/mdbook-emoji/actions?query=workflow%3Abuild)
+[![dependency status](https://deps.rs/repo/github/almereyda/mdbook-emoji/status.svg)](https://deps.rs/repo/github/almereyda/mdbook-emoji)
+[![Crates.io](https://img.shields.io/crates/v/mdbook-emoji)](https://crates.io/crates/mdbook-emoji)
 
 [mdBook](https://github.com/rust-lang/mdBook) preprocessor that replaces straight quotes with curly quotes, except within code blocks or code spans.
 
-It does the same as the **curly-quotes** option of the mdBook HTML renderer. The only advantage is that it can be applied to any renderer.
+It adds an **emoji** option for the mdBook renderers.
 
 ## Usage
 
-The following example configures mdbook-curly-quotes as a preprocessor for the epub renderer.
+The following example configures `mdbook-emoji` as a preprocessor for the HTML renderer.
 
 ```toml
 [book]
 title = "Example book"
 author = "John Doe"
 
-# add the curly-quotes preprocessor
-[preprocessor.curly-quotes]
+# add the emoji preprocessor
+[preprocessor.emoji]
 # select renderers
-renderer = ["epub"]
+renderer = ["html"]
 
-[output.epub]
+[output.html]
 ```
 
 More on configuring preprocessors can be found in the [mdBook Documentation](https://rust-lang.github.io/mdBook/format/config.html#configuring-preprocessors).

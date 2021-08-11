@@ -1,6 +1,6 @@
 mod preprocessor;
 
-use crate::preprocessor::CurlyQuotes;
+use crate::preprocessor::EmojiPreprocessor;
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use semver::{Version, VersionReq};
@@ -8,7 +8,7 @@ use std::io;
 use std::process;
 use structopt::StructOpt;
 
-/// mdBook preprocessor which replaces straight quotes with curly quotes
+/// mdBook preprocessor that replaces emoji short codes with Unicode code points
 #[derive(StructOpt)]
 struct Opt {
     #[structopt(subcommand)]
@@ -23,7 +23,7 @@ enum Command {
 
 fn main() {
     let opts = Opt::from_args();
-    let preprocessor = CurlyQuotes::new();
+    let preprocessor = EmojiPreprocessor::new();
 
     if let Some(Command::Supports { renderer }) = opts.command {
         handle_supports(&preprocessor, &renderer);

@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-emoji"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Jon Richter <jon@allmende.io>"]
 edition = "2018"
 keywords = ["mdbook", "markdown", "emoji"]

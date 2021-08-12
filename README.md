@@ -4,9 +4,9 @@
 [![dependency status](https://deps.rs/repo/github/almereyda/mdbook-emoji/status.svg)](https://deps.rs/repo/github/almereyda/mdbook-emoji)
 [![Crates.io](https://img.shields.io/crates/v/mdbook-emoji)](https://crates.io/crates/mdbook-emoji)
 
-[mdBook](https://github.com/rust-lang/mdBook) preprocessor that replaces straight quotes with curly quotes, except within code blocks or code spans.
+[mdBook](https://github.com/rust-lang/mdBook) preprocessor that replaces emoji shortcodes with their Unicode code points, except within code blocks or code spans.
 
-It adds an **emoji** option for the mdBook renderers.
+It adds an **emoji** option for mdBook.
 
 ## Usage
 

@@ -17,7 +17,7 @@ codegen-units = 1
 
 [dependencies]
 emojis = "0.1.2"
-mdbook = { version = "0.4.12", default-features = false }
+mdbook = { version = "0.4.26", default-features = false }
 pulldown-cmark = "0.7.2"
 pulldown-cmark-to-cmark = "4.0.2"
 regex = "1"
